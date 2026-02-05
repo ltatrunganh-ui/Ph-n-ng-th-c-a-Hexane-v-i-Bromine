@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng: Hexane + Bromine</title>
+    <style>
+        :root {
+            --hexane-color: rgba(255, 255, 255, 0.3);
+            --bromine-water: rgba(255, 100, 0, 0.6);
+            --bromine-hexane: rgba(200, 50, 0, 0.8);
+            --water-clear: rgba(200, 230, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fce4ec;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h2 { color: #c0007a; }
+
+        /* Khu vực ống nghiệm */
+        .lab-bench {
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .test-tube {
+            width: 50px;
+            height: 200px;
+            border: 3px solid #ccc;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .liquid {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            transition: all 1s ease;
+        }
+
+        #layer-bottom { height: 0; background: var(--water-clear); z-index: 1; }
+        #layer-top { height: 0; background: var(--hexane-color); z-index: 2; bottom: 0; }
+
+        /* Bông tẩm NaOH */
+        .cotton {
+            width: 56px;
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            position: absolute;
+            top: -15px;
+            left: -6px;
+            display: none;
+            border: 1px solid #ddd;
+        }
+
+        /* Hiệu ứng rung lắc */
+        .shake { animation: shaking 0.5s infinite; }
+        @keyframes shaking {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Nút điều khiển */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #c0007a;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        button:hover:not(:disabled) { background: #90005c; }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3f8;
+            border-left: 5px solid #c0007a;
+            min-height: 50px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mô phỏng Thí nghiệm 1</h2>
+    <p><i>Phản ứng thế của Hexane với Bromine</i></p>
+
+    <div class="lab-bench">
+        <div id="tube" class="test-tube">
+            <div id="cotton-plug" class="cotton"></div>
+            <div id="layer-top" class="liquid"></div>
+            <div id="layer-bottom" class="liquid"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="btn1" onclick="addHexane()">1. Thêm Hexane</button>
+        <button id="btn2" onclick="addBromine()" disabled>2. Thêm Br₂ (nước)</button>
+        <button id="btn3" onclick="shakeTube()" disabled>3. Lắc nhẹ</button>
+        <button id="btn4" onclick="exposeLight()" disabled>4. Chiếu sáng / Đun nóng</button>
+    </div>
+
+    <div id="status">Bắt đầu thí nghiệm bằng cách thêm Hexane vào ống nghiệm.</div>
+    <button onclick="resetLab()" style="margin-top: 20px; background: #666;">Làm lại</button>
+</div>
+
+<script>
+    let step = 0;
+    const layerTop = document.getElementById('layer-top');
+    const layerBottom = document.getElementById('layer-bottom');
+    const status = document.getElementById('status');
+    const tube = document.getElementById('tube');
+    const cotton = document.getElementById('cotton-plug');
+
+    function addHexane() {
+        layerTop.style.height = "40px";
+        layerTop.style.background = "var(--hexane-color)";
+        status.innerText = "Đã thêm 1ml Hexane (không màu, nhẹ hơn nước).";
+        document.getElementById('btn1').disabled = true;
+        document.getElementById('btn2').disabled = false;
+    }
+
+    function addBromine() {
+        // Nước brom nặng hơn hexane nên sẽ xuống dưới
+        layerBottom.style.height = "40px";
+        layerBottom.style.background = "var(--bromine-water)";
+        // Đẩy hexane lên trên
+        layerTop.style.bottom = "40px";
+        
+        status.innerText = "Đã thêm 1ml nước Bromine (màu cam). Hỗn hợp tách thành 2 lớp: Hexane ở trên, nước Bromine ở dưới.";
+        document.getElementById('btn2').disabled = true;
+        document.getElementById('btn3').disabled = false;
+    }
+
+    function shakeTube() {
+        tube.classList.add('shake');
+        status.innerText = "Đang lắc nhẹ ống nghiệm...";
+        
+        setTimeout(() => {
+            tube.classList.remove('shake');
+            // Sau khi lắc, Bromine tan tốt trong hexane (hữu cơ) nên lớp trên đậm màu, lớp dưới nhạt màu
+            layerTop.style.background = "var(--bromine-hexane)";
+            layerBottom.style.background = "var(--water-clear)";
+            cotton.style.display = "block";
+            
+            status.innerText = "Sau khi lắc: Bromine chuyển từ lớp nước sang lớp hexane. Lớp trên có màu da cam đậm, lớp dưới gần như không màu. Đã nút bông tẩm NaOH.";
+            document.getElementById('btn3').disabled = true;
+            document.getElementById('btn4').disabled = false;
+        }, 2000);
+    }
+
+    function exposeLight() {
+        status.innerText = "Đang chiếu sáng/đun nóng... Phản ứng thế đang diễn ra.";
+        tube.style.boxShadow = "0 0 20px yellow";
+        
+        setTimeout(() => {
+            // Phản ứng xảy ra, Bromine bị tiêu thụ -> mất màu
+            layerTop.style.background = "var(--hexane-color)";
+            tube.style.boxShadow = "none";
+            
+            status.innerHTML = "<b>Kết quả:</b> Màu da cam ở lớp trên đã mất dần. <br><b>Hiện tượng:</b> Hexane phản ứng thế với Bromine tạo ra Bromohexane và HBr. Khí HBr bay lên được bông tẩm NaOH hấp thụ.";
+            document.getElementById('btn4').disabled = true;
+        }, 3000);
+    }
+
+    function resetLab() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
